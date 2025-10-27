@@ -1,0 +1,45 @@
+{
+  "name": "@xtitan/koa-error-handler",
+  "version": "0.1.1",
+  "description": "A lightweight error-handling middleware for Koa with customizable formatters.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node dist",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x-titan/koa-error-handler.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "koa",
+    "middleware",
+    "error",
+    "handler",
+    "typescript"
+  ],
+  "author": "Aset Telmanov <telmanov2002.at@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "http-errors": "^2.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/http-errors": "^2.0.5",
+    "@types/koa": "^3.0.1",
+    "@types/node": "^24.9.1",
+    "eslint": "^9.35.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0"
+  },
+  "bugs": {
+    "url": "https://github.com/x-titan/koa-error-handler/issues"
+  },
+  "homepage": "https://github.com/x-titan/koa-error-handler#readme"
+}
