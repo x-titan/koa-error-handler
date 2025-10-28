@@ -1,7 +1,7 @@
 import { isResponded } from "./utils"
 import type { Context, Next } from "koa"
 
-export type ErrorState<
+export type ErrorResponse<
   Err = any
 > = {
   error: Err,
@@ -16,7 +16,7 @@ export type ErrorState<
   },
 }
 
-export type Formatter<Err = any> = (errorState: ErrorState<Err>) => void
+export type Formatter<Err = any> = (errorResponse: ErrorResponse<Err>) => void
 
 export interface ErrorHandlerOptions {
   prepare?: (error: any) => any
@@ -53,7 +53,7 @@ export default function error(options?: ErrorHandlerOptions | Formatter) {
 
       const error = prepare ? prepare(err) : err
 
-      const errorState: ErrorState = {
+      const errorResponse: ErrorResponse = {
         error,
         status: error.status || ctx.status || 500,
         type: "application/json",
@@ -66,12 +66,12 @@ export default function error(options?: ErrorHandlerOptions | Formatter) {
         },
       }
 
-      if (formatter) formatter(errorState)
-      if (finalize) finalize(errorState)
+      if (formatter) formatter(errorResponse)
+      if (finalize) finalize(errorResponse)
 
-      ctx.status = errorState.status
-      ctx.type = errorState.type
-      ctx.body = errorState.body || {
+      ctx.status = errorResponse.status
+      ctx.type = errorResponse.type
+      ctx.body = errorResponse.body || {
         error: error.message || "Internal Server Error"
       }
     }
