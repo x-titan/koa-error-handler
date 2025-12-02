@@ -1,39 +1,24 @@
 import { isResponded } from "./utils"
-import type { Context, Next } from "koa"
 
-export type ErrorResponse<
-  Err = any
-> = {
-  error: Err,
-  status: number,
-  body: any,
-  type: string,
+import type {
+  Context,
+  Next,
+} from "koa"
+import type {
+  ErrorHandlerOptions,
+  ErrorEventListener,
+  ErrorEvent,
+} from "./types"
 
-  meta: {
-    accepts: string[],
-    method: string,
-    path: string
-  },
-}
-
-export type Formatter<Err = any> = (errorResponse: ErrorResponse<Err>) => void
-
-export interface ErrorHandlerOptions {
-  prepare?: (error: any) => any
-  formatter?: Formatter
-  finalize?: Formatter,
-  debug?: boolean
-}
-
-export default function error(options?: ErrorHandlerOptions | Formatter) {
+export default function error(options?: ErrorHandlerOptions | ErrorEventListener) {
   if (typeof options === "function") {
-    options = { formatter: options }
+    options = { onerror: options }
   }
 
   const {
     debug = process.env.NODE_ENV === "development",
     prepare,
-    formatter,
+    onerror,
     finalize,
   } = options || {}
 
@@ -51,12 +36,12 @@ export default function error(options?: ErrorHandlerOptions | Formatter) {
         return
       }
 
-      const error = prepare ? prepare(err) : err
+      const preparedError = prepare ? prepare(err) : err
 
-      const errorResponse: ErrorResponse = {
-        error,
-        status: error.status || ctx.status || 500,
-        type: "application/json",
+      const event: ErrorEvent = {
+        error: preparedError,
+        status: preparedError.status || ctx.status || 500,
+        type: null!,
         body: null,
 
         meta: {
@@ -66,14 +51,15 @@ export default function error(options?: ErrorHandlerOptions | Formatter) {
         },
       }
 
-      if (formatter) formatter(errorResponse)
-      if (finalize) finalize(errorResponse)
+      if (onerror) onerror(event)
+      if (finalize) finalize(event)
 
-      ctx.status = errorResponse.status
-      ctx.type = errorResponse.type
-      ctx.body = errorResponse.body || {
-        error: error.message || "Internal Server Error"
+      ctx.status = event.status
+      ctx.body = event.body ?? {
+        error: preparedError.message || "Internal Server Error"
       }
+
+      if (event.type) ctx.type = event.type
     }
   }
 }

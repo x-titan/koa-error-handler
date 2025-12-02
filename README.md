@@ -30,7 +30,7 @@ npm install @x-titan/koa-error-handler
 ```ts
 import Koa from "koa"
 import createHttpError, { type HttpError } from "http-errors"
-import error, { ErrorState } from "@x-titan/koa-error-handler"
+import error, { ErrorEvent } from "@x-titan/koa-error-handler"
 
 const app = new Koa()
 
@@ -43,18 +43,18 @@ app.use(error({
     )
   },
 
-  formatter(errorState: ErrorState<HttpError>) {
-    const err = errorState.error
+  onerror(event: ErrorEvent<HttpError>) {
+    const err = event.error as HttpError
 
     // Format final JSON response
-    errorState.body = {
+    event.body = {
       success: false,
       message: err.expose ? err.message : "Internal Server Error",
       status: err.status,
       timestamp: new Date().toISOString(),
     }
 
-    errorState.status = err.status
+    event.status = err.status
   }
 }))
 
@@ -69,7 +69,7 @@ app.listen(3000, () => console.log("Server running on http://localhost:3000"))
 
 ## ⚙️ API
 
-### `error(options?: errorHandlerOptions | Formatter)`
+### `error(options?: ErrorHandlerOptions | ErrorEventListener)`
 
 Creates a Koa middleware for centralized error handling.
 
@@ -77,19 +77,19 @@ Creates a Koa middleware for centralized error handling.
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `prepare` | `(error: any) => any` | Optional. Normalize or wrap any thrown error before formatting. |
-| `formatter` | `(errorState: ErrorState) => void` | Required. Define how the final JSON response should look. |
-| `finalize` | `(errorState: ErrorState) => void` | Optional. Mutate the response before sending (e.g., for logging). |
+| `prepare` | `(error: any) => any` | Optional. Normalize or wrap any thrown error before handling error event. |
+| `onerror` | `(event: ErrorEvent) => void` | Required. Define how the final JSON response should look. |
+| `finalize` | `(event: ErrorEvent) => void` | Optional. Mutate the response before sending (e.g., for logging). |
 | `debug` | `boolean` | Optional. Logs caught errors to console when `true`. Defaults to `process.env.NODE_ENV === "development"`. |
 
 ---
 
-### `ErrorState`
+### `ErrorEvent`
 
-Each formatter receives an `ErrorState` object:
+Each onerror receives an `ErrorEvent` object:
 
 ```ts
-type ErrorState<Err = any> = {
+type ErrorEvent<Err = any> = {
   error: Err
   status: number
   body: any
@@ -122,17 +122,17 @@ app.use(error({
   prepare(error) {
     return createHttpError(error.status || 500, error.message)
   },
-  formatter(errorState) {
-    const err = errorState.error
+  onerror(event) {
+    const err = event.error
     const isDev = process.env.NODE_ENV === "development"
 
-    errorState.body = {
+    event.body = {
       success: false,
       message: err.expose ? err.message : "Internal Server Error",
       ...(isDev && { stack: err.stack }),
     }
 
-    errorState.status = err.status
+    event.status = err.status
   }
 }))
 ```
@@ -141,7 +141,7 @@ app.use(error({
 
 ## 🧺 Default Behavior
 
-If no `formatter` is provided:
+If no `onerror` is provided:
 
 ```json
 {
