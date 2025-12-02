@@ -1,6 +1,6 @@
 {
   "name": "@x-titan/koa-error-handler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A lightweight error-handling middleware for Koa with customizable formatters.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
